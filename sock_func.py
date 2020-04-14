@@ -14,22 +14,26 @@ def ban(sock, user):
     mess(sock, '.ban {}'.format(user))
 
 
+def unban(sock, user):
+    mess(sock, '.unban {}'.format(user))
+
+
 def timeout(sock, user, seconds=500):
-    mess(sock, '.timeout {}'.format(user, seconds))
+    mess(sock, '.timeout {} {}:'.format(user, seconds))
 
 
-# tmi.twitch.tv/group/user/sergoarefyev/chatters
 def fill_op_list():
     while True:
         try:
             url = 'http://tmi.twitch.tv/group/user/{}/chatters'.format(
                 config.CHANNEL)
-            res = urlopen(url).read()
+            res = urlopen(url).read().decode()
 
             # Не уверен что это нужно ловить именно так.
             if res.find('502 bad getway') == -1:
+
                 config.oplist.clear()
-                data = loads(res)  # Почитать про json!!!
+                data = loads(res)
                 for item in data['chatters']['moderators']:
                     config.oplist[item] = 'moderator'
                 for item in data['chatters']['staff']:
@@ -38,9 +42,13 @@ def fill_op_list():
                     config.oplist[item] = 'admin'
                 for item in data['chatters']['global_mods']:
                     config.oplist[item] = 'global_mod'
+
+        # Написать нормальные исключения!!!!!!!
         except:
             print('Failed to get json')
-        sleep(5)
+
+        print(config.oplist)
+        sleep(3)
 
 
 def is_op(user):
