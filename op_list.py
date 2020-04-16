@@ -1,25 +1,8 @@
+from time import sleep
 import config
 from urllib.request import urlopen
-from time import sleep
 from json import loads
-import threading
 
-
-def mess(sock, message):
-    sock.send('PRIVMSG #{} :{}\r\n'.format(
-        config.CHANNEL, message).encode('utf-8'))
-
-
-def ban(sock, user):
-    mess(sock, '.ban {}'.format(user))
-
-
-def unban(sock, user):
-    mess(sock, '.unban {}'.format(user))
-
-
-def timeout(sock, user, seconds=500):
-    mess(sock, '.timeout {} {}:'.format(user, seconds))
 
 
 def fill_op_list():
@@ -28,10 +11,7 @@ def fill_op_list():
             url = 'http://tmi.twitch.tv/group/user/{}/chatters'.format(
                 config.CHANNEL)
             res = urlopen(url).read().decode()
-
-            # Не уверен что это нужно ловить именно так.
             if res.find('502 bad getway') == -1:
-
                 config.oplist.clear()
                 data = loads(res)
                 for item in data['chatters']['moderators']:
@@ -42,13 +22,13 @@ def fill_op_list():
                     config.oplist[item] = 'admin'
                 for item in data['chatters']['global_mods']:
                     config.oplist[item] = 'global_mod'
-
-        # Написать нормальные исключения!!!!!!!
-        except:
-            print('Failed to get json')
-
+            else:
+                print('ERROR 502: bad getway')
+        except Exception as err:
+            print('Faild with error:', str(err))
+            break
         print(config.oplist)
-        sleep(3)
+        sleep(5)
 
 
 def is_op(user):
