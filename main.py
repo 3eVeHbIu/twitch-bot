@@ -1,6 +1,6 @@
 # files
 import config
-import managers
+from managers import fill_manager_list, is_manager
 # libraries
 import asyncio
 import re
@@ -30,13 +30,13 @@ async def check_chat_messages():
         else:
             username = re.search(r'\w+', response).group(0)
             message = CHAT_MESSAGE.sub('', response)[:-1]
-            if username in config.managers_list:
+            if is_manager(username):
                 print(username + ': ' + message)
 
 
 async def async_distribution():
     tasks = []
-    tasks.append(asyncio.create_task(managers.fill_manager_list()))
+    tasks.append(asyncio.create_task(fill_manager_list()))
     tasks.append(asyncio.create_task(check_chat_messages()))
     await asyncio.gather(*tasks)
 
