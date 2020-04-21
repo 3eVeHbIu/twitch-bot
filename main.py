@@ -1,6 +1,6 @@
 # files
 import config
-from managers import fill_manager_list, is_manager
+from managers import fill_manager_list, is_manager, viewers
 # libraries
 import asyncio
 import re
@@ -8,6 +8,21 @@ import re
 
 CHAT_MESSAGE = re.compile(r'^:\w+!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :')
 DEPARTURE_TEMPLATE = 'PRIVMSG #{} :{}\r\n'
+
+
+def make_time_req(item):
+    time = int(item[1][1])
+    if item[1][1] < 60:
+        return item[0] + ' -- ' + str(time) + ' сек'
+    elif item[1][1] < 3600:
+        return item[0] + ' -- ' \
+            + str(time // 60) + ' мин ' \
+            + str(time % 60) + ' сек'
+    else:
+        return item[0] + ' -- ' \
+            + str(time // 3600) + ' ч ' \
+            + str(time % 3600 // 60) + ' мин ' \
+            + str(time % 60) + ' сек'
 
 
 async def check_chat_messages():
@@ -32,6 +47,14 @@ async def check_chat_messages():
             message = CHAT_MESSAGE.sub('', response)[:-1]
             if is_manager(username):
                 print(username + ': ' + message)
+                if message.startswith('hah'):
+                    request = list(viewers.items())
+                    request.sort(key=lambda i: i[1][1])
+                    if len(request) > 5:
+                        request = request[:5]
+                    request = '\n'.join([make_time_req(i) for i in request])
+                writer.write(DEPARTURE_TEMPLATE.format(
+                    config.CHANNEL, request).encode())
 
 
 async def async_distribution():
