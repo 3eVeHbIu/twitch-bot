@@ -1,10 +1,12 @@
-from config import CHANNEL
-from json import loads
 import asyncio
-import aiohttp
-from time import time
-from TimeClass import Time
+from json import loads
 from random import randint
+from time import monotonic
+
+import aiohttp
+
+from TimeClass import Time
+from config import CHANNEL, BOT_LIST
 
 managers_list = {}
 viewers = {}
@@ -16,10 +18,10 @@ def write_data_into_lists(data):
     data = loads(data.decode())
     for role in data['chatters']:
         for item in data['chatters'][role]:
-            if role in ['moderators', 'staff', 'admins', 'global_mods']:
+            if role in ['moderators', 'staff', 'admins', 'global_mods', 'broadcaster']:
                 managers_list[item] = role
             if item in viewers:
-                viewers[item]['time'] += time() - start_time
+                viewers[item]['time'] += monotonic() - start_time
             else:
                 viewers[item] = {'role': role, 'time': Time()}
 
@@ -33,7 +35,7 @@ async def get_json(session, url):
 
 async def fill_manager_list():
     global start_time
-    start_time = time()
+    start_time = monotonic()
     session = aiohttp.ClientSession()
     while True:
         try:
@@ -44,22 +46,9 @@ async def fill_manager_list():
         except Exception as err:
             print('Failed with error:', str(err))
             break
-        start_time = time()
+        start_time = monotonic()
         await asyncio.sleep(randint(1, 5))
 
 
 def is_manager(user):
-    return user in managers_list
-
-
-# For debug
-if __name__ == '__main__':
-    async def p():
-        while True:
-            print(viewers)
-            await asyncio.sleep(5)
-
-    async def main():
-        await asyncio.gather(p(), fill_manager_list())
-
-    asyncio.run(main())
+    return user in managers_list or user in BOT_LIST

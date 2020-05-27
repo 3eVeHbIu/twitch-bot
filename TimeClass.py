@@ -4,11 +4,11 @@ class Time:
 
     def __str__(self):
         if self.sec < 60:
-            return f"{self.sec} сек"
+            return f"{self.sec}_сек"
         elif self.sec < 3600:
-            return f"{self.sec // 60} мин {self.sec % 60} сек"
+            return f"{self.sec // 60}_мин_{self.sec % 60}_сек"
         else:
-            return f"{self.sec // 3600} ч {self.sec % 3600 // 60} мин {self.sec % 60} сек"
+            return f"{self.sec // 3600}_ч_{self.sec % 3600 // 60}_мин_{self.sec % 60}_сек"
 
     def __repr__(self):
         return str(self.sec)
